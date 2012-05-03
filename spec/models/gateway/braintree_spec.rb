@@ -145,6 +145,19 @@ describe Spree::Gateway::Braintree do
       transaction.status.should == Braintree::Transaction::Status::Voided
     end
   end
+
+  describe "create_profile" do
+    it "should raise gateway error if a profile cannot be created" do
+      store_response = mock
+      store_response.stub!(:success?).and_return(false)
+      store_response.stub!(:message).and_return('error!')
+      @gateway.provider.should_receive(:store).and_return(store_response)
+      lambda do
+        @gateway.create_profile(@payment)
+      end.should raise_error(Spree::Core::GatewayError)
+    end
+  end
+
   def credit_using_spree_interface
     @payment.log_entries.size.should == 1
     @payment.source.credit(@payment) # as done in PaymentsController#fire
